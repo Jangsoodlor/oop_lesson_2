@@ -1,7 +1,7 @@
 import csv
 import os
 
-class read_csv:
+class CSV_Read:
     def __init__(self, filename) -> None:
         self._list = []
         self.__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -70,17 +70,16 @@ class Table:
     def __str__(self):
         return self.table_name + ':' + str(self.table)
 
-table1 = Table('cities', read_csv('Cities').get_list)
-table2 = Table('countries', read_csv('Countries').get_list)
-table3 = Table('players', read_csv('Players').get_list)
-table4 = Table('teams', read_csv('Teams').get_list)
-table5 = Table('titanic', read_csv('Titanic').get_list)
+table1 = Table('cities', CSV_Read('Cities').get_list)
+table2 = Table('countries', CSV_Read('Countries').get_list)
+table3 = Table('players', CSV_Read('Players').get_list)
+table4 = Table('teams', CSV_Read('Teams').get_list)
+
 my_DB = DB()
 my_DB.insert(table1)
 my_DB.insert(table2)
 my_DB.insert(table3)
 my_DB.insert(table4)
-my_DB.insert(table5)
 
 players = my_DB.search('players')
 players_f = players.filter(lambda x: 'ia' in x['team'] 
