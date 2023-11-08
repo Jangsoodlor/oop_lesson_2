@@ -74,12 +74,13 @@ table1 = Table('cities', CSV_Read('Cities').get_list)
 table2 = Table('countries', CSV_Read('Countries').get_list)
 table3 = Table('players', CSV_Read('Players').get_list)
 table4 = Table('teams', CSV_Read('Teams').get_list)
-
+table5 = Table('titanic', CSV_Read('Titanic').get_list)
 my_DB = DB()
 my_DB.insert(table1)
 my_DB.insert(table2)
 my_DB.insert(table3)
 my_DB.insert(table4)
+my_DB.insert(table5)
 
 players = my_DB.search('players')
 players_f = players.filter(lambda x: 'ia' in x['team'] 
@@ -106,7 +107,26 @@ print('The average number of passes made by forwards')
 print(fwd_pass)
 print('The average number of passes made by midfielders')
 print(mid_pass)
+print()
 
+titanic = my_DB.search('titanic')
+third_class_fare = titanic.filter(lambda x: x['class'] == '3').aggregate(lambda y: sum(y) / len(y), 'fare')
+first_class_fare = titanic.filter(lambda x: x['class'] == '1').aggregate(lambda y: sum(y) / len(y), 'fare')
+print('The average fare paid by passengers in the first class')
+print(first_class_fare)
+print('The average fare paid by passengers in the third class')
+print(third_class_fare)
+print()
+
+survive_m = titanic.filter(lambda x: x['gender'] == 'M' and x['survived'] == 'yes').aggregate(lambda y: len(y), 'fare')
+all_m = titanic.filter(lambda x: x['gender'] == 'M').aggregate(lambda y: len(y), 'fare')
+print('The survival rate of male passengers')
+print(survive_m/all_m * 100, '%')
+
+survive_f = titanic.filter(lambda x: x['gender'] == 'F' and x['survived'] == 'yes').aggregate(lambda y: len(y), 'fare')
+all_f = titanic.filter(lambda x: x['gender'] == 'F').aggregate(lambda y: len(y), 'fare')
+print('The survival rate of female passengers')
+print(survive_f/all_f * 100, '%')
 
 # my_table1 = my_DB.search('cities')
 
