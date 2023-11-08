@@ -1,19 +1,23 @@
 import csv, os
 
-__location__ = os.path.realpath(
-    os.path.join(os.getcwd(), os.path.dirname(__file__)))
-
-cities = []
-with open(os.path.join(__location__, 'Cities.csv')) as f:
-    rows = csv.DictReader(f)
-    for r in rows:
-        cities.append(dict(r))
-
-countries = []
-with open(os.path.join(__location__, 'Countries.csv')) as f:
-    rows = csv.DictReader(f)
-    for r in rows:
-        countries.append(dict(r))
+class read_csv:
+    def __init__(self, filename) -> None:
+        self._list = []
+        self.__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+        with open(os.path.join(self.__location__, filename + '.csv')) as f:
+            rows = csv.DictReader(f)
+            for r in rows:
+                self._list.append(dict(r))
+    
+    @property
+    def get_list(self):
+        return self._list
+    
+cities = read_csv('Cities').get_list
+countries = read_csv('Countries').get_list
+teams = read_csv('Teams').get_list
+players = read_csv('Players').get_list
+titanic = read_csv('Titanic').get_list
 
 class DB:
     def __init__(self):
@@ -73,6 +77,9 @@ class Table:
 
 table1 = Table('cities', cities)
 table2 = Table('countries', countries)
+table3 = Table('titanic', titanic)
+table4 = Table('players', players)
+table5 = Table('teams', teams)
 my_DB = DB()
 my_DB.insert(table1)
 my_DB.insert(table2)
