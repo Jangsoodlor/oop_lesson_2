@@ -51,12 +51,24 @@ class Table:
                 filtered_table.table.append(item1)
         return filtered_table
 
+    def __is_float(self, element):
+        if element is None: 
+            return False
+        try:
+            float(element)
+            return True
+        except ValueError:
+            return False
+
     def aggregate(self, function, aggregation_key):
         temps = []
         for item1 in self.table:
-            temps.append(float(item1[aggregation_key]))
+            if self.__is_float(item1[aggregation_key]):
+                temps.append(float(item1[aggregation_key]))
+            else:
+                temps.append(item1[aggregation_key])
         return function(temps)
-
+    
     def select(self, attributes_list):
         temps = []
         for item1 in self.table:
@@ -66,6 +78,55 @@ class Table:
                     dict_temp[key] = item1[key]
             temps.append(dict_temp)
         return temps
+    
+    def pivot_table(self, keys_to_pivot_list, keys_to_aggreagte_list, aggregate_func_list):
+        # First create a list of unique values for each key
+        unique_values_list = []
+        for key in keys_to_pivot_list:
+            _list = []
+            for d in self.select(keys_to_pivot_list):
+                if d.get(key) not in _list:
+                    _list.append(d.get(key))
+            unique_values_list.append(_list)
+            
+        # Here is an example of of unique_values_list for
+        # keys_to_pivot_list = ['embarked', 'gender', 'class']
+        # unique_values_list =
+        # [['Southampton', 'Cherbourg', 'Queenstown'], ['M', 'F'], ['3', '2','1']]
+
+        # Get the combination of unique_values_list
+        # You will make use of the function you implemented in Task 2
+
+        from combination_gen import gen_comb_list
+        comb = gen_comb_list(unique_values_list)
+
+        # code that makes a call to combination_gen.gen_comb_list
+
+        # Example output:
+        # [['Southampton', 'M', '3'],
+        #  ['Cherbourg', 'M', '3'],
+        #  ...
+        #  ['Queenstown', 'F', '1']]
+
+        # code that filters each combination
+        pivoted = []
+        for i in comb:
+            temp = self.filter(lambda x: x[keys_to_pivot_list[0]] == i[0])
+            for j in range(1, len(keys_to_pivot_list)):
+                temp = temp.filter(lambda x: x[keys_to_pivot_list[j]] == i[j])
+            temp_list = []
+            for a in range(len(keys_to_aggreagte_list)):
+                result = temp.aggregate(aggregate_func_list[a], keys_to_aggreagte_list[a])
+                temp_list.append(result)
+            pivoted.append([i, temp_list])
+        return pivoted
+        # for each filter table applies the relevant aggregate functions
+        # to keys to aggregate
+        # the aggregate functions is listed in aggregate_func_list
+        # to keys to aggregate is listed in keys_to_aggreagte_list
+
+        # return a pivot table
+
 
     def __str__(self):
         return self.table_name + ':' + str(self.table)
@@ -74,12 +135,13 @@ table1 = Table('cities', CSV_Read('Cities').get_list)
 table2 = Table('countries', CSV_Read('Countries').get_list)
 table3 = Table('players', CSV_Read('Players').get_list)
 table4 = Table('teams', CSV_Read('Teams').get_list)
-
+table5 = Table('titanic', CSV_Read('Titanic').get_list)
 my_DB = DB()
 my_DB.insert(table1)
 my_DB.insert(table2)
 my_DB.insert(table3)
 my_DB.insert(table4)
+my_DB.insert(table5)
 
 players = my_DB.search('players')
 players_f = players.filter(lambda x: 'ia' in x['team'] 
@@ -106,7 +168,31 @@ print('The average number of passes made by forwards')
 print(fwd_pass)
 print('The average number of passes made by midfielders')
 print(mid_pass)
+print()
 
+titanic = my_DB.search('titanic')
+third_class_fare = titanic.filter(lambda x: x['class'] == '3').aggregate(lambda y: sum(y) / len(y), 'fare')
+first_class_fare = titanic.filter(lambda x: x['class'] == '1').aggregate(lambda y: sum(y) / len(y), 'fare')
+print('The average fare paid by passengers in the first class')
+print(first_class_fare)
+print('The average fare paid by passengers in the third class')
+print(third_class_fare)
+print()
+
+survive_m = titanic.filter(lambda x: x['gender'] == 'M' and x['survived'] == 'yes').aggregate(lambda y: len(y), 'fare')
+all_m = titanic.filter(lambda x: x['gender'] == 'M').aggregate(lambda y: len(y), 'fare')
+print('The survival rate of male passengers')
+print(survive_m/all_m * 100, '%')
+
+survive_f = titanic.filter(lambda x: x['gender'] == 'F' and x['survived'] == 'yes').aggregate(lambda y: len(y), 'fare')
+all_f = titanic.filter(lambda x: x['gender'] == 'F').aggregate(lambda y: len(y), 'fare')
+print('The survival rate of female passengers')
+print(survive_f/all_f * 100, '%')
+
+my_pivot = titanic.pivot_table(['embarked', 'gender', 'class'], 
+                          ['fare', 'fare', 'fare', 'last'], 
+                          [lambda x: min(x), lambda x: max(x), lambda x: sum(x)/len(x), lambda x: len(x)])
+print(my_pivot)
 
 # my_table1 = my_DB.search('cities')
 
