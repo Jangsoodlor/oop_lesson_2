@@ -127,9 +127,10 @@ survive_f = titanic.filter(lambda x: x['gender'] == 'F' and x['survived'] == 'ye
 all_f = titanic.filter(lambda x: x['gender'] == 'F').aggregate(lambda y: len(y), 'fare')
 print('The survival rate of female passengers')
 print(survive_f/all_f * 100, '%')
+print()
 
 male_southampton = titanic.filter(lambda x: x['gender'] == 'M' and x['embarked'] == 'Southampton').aggregate(lambda y: len(y), 'fare')
-print(' The total number of male passengers embarked at Southampton')
+print('The total number of male passengers embarked at Southampton')
 print(male_southampton)
 # my_table1 = my_DB.search('cities')
 
